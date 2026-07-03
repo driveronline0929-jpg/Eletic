@@ -2,41 +2,33 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>🚀 Space Maze AR - Astronaut Journey</title>
+    <title>🚀 Space Maze AR - Big Text Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        #webcam { transform: scaleX(-1); will-change: transform; opacity: 0.4; } /* ปรับกล้องจางลงเพื่อให้เห็นเขาวงกตชัดขึ้น */
-    </style>
+    <style>#webcam { transform: scaleX(-1); will-change: transform; opacity: 0.4; }</style>
 </head>
 <body class="bg-slate-950 m-0 p-0 overflow-hidden select-none touch-none">
 
-    <!-- ส่วนแสดงผลกล้อง (Background) -->
     <video id="webcam" class="absolute w-full h-full object-cover z-10" autoplay playsinline muted></video>
-    
-    <!-- ฉากและกราฟิกเขาวงกตอวกาศ 3D -->
     <div id="canvas3d" class="absolute w-full h-full z-20 pointer-events-none"></div>
 
-    <!-- UI แผงควบคุมสไตล์ยานอวกาศ -->
-    <div class="absolute top-4 left-4 z-30 bg-space bg-slate-900/90 backdrop-blur-md text-white p-5 rounded-xl border border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)] max-w-sm">
+    <div class="absolute top-4 left-4 z-30 bg-slate-900/90 backdrop-blur-md text-white p-5 rounded-xl border border-cyan-500/30 shadow-2xl max-w-sm">
         <h1 class="text-xl font-bold tracking-wide mb-1 text-cyan-400">🚀 Space Maze AR</h1>
-        <p class="text-xs text-slate-400 mb-3">พามนุษย์อวกาศ (กลาง) เดินทางไปหายานอวกาศ (ขวาบน)</p>
+        <p class="text-xs text-slate-400 mb-3">หาช่องว่างบนวงแหวน ลากเป้าเล็งออกไปหายานอวกาศ (ขวาบน)</p>
         <div class="space-y-2 text-sm border-t border-slate-700 pt-3">
             <div id="game-status" class="flex items-center gap-2">
                 <span id="status-led" class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="status-text">ระบบนำทาง: ปกติ</span>
             </div>
             <div id="score" class="text-yellow-400 font-mono text-base">ชนกำแพงดาวเคราะห์: 0 ครั้ง</div>
-            <button id="btn-send" class="w-full mt-2 bg-cyan-600 hover:bg-cyan-500 text-white font-medium py-2 px-4 rounded-lg transition text-xs shadow-md cursor-pointer">
-                📤 บันทึกสถิติลง Google Sheets
-            </button>
+            <button id="btn-send" class="w-full mt-2 bg-cyan-600 hover:bg-cyan-500 text-white font-medium py-2 px-4 rounded-lg text-xs shadow-md cursor-pointer">📤 บันทึกสถิติลง Google Sheets</button>
         </div>
     </div>
 
     <script>
-        // 🚨 ใส่ลิงก์ Web App URL ยาวๆ จาก Google Apps Script ของพี่ตรงนี้ครับ
+        // 🚨 นำลิงก์ Web App URL ตัวเดิมของพี่มาวางตรงนี้ได้เลยครับ
         const GAS_WEB_APP_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnTZ65arLcTaFO2wuhJI-N7e_eBtJcIMMIstUvfetZeUmIQ3ji8qr7DaJXWU-aSdzN3bdm1nZpcpIIY6Jcmfik6Wm_216l3wh7cv0MLDh8uRg93E70aF0kKsrxbkXA-DOsvIWJ0FKxI3J9VqBuMRd0lLI1cnO4VpnveLy1nl16wel9n38Qf_M9TSjOTpVRDzD7GyEgJKIA7a99ORsICW6IXFKHMRVB7tzFG2i5mE7ZDQ1_91lImofSgS6Q7c8Dz_Y0LtwC2swnhp4k27SzwgGmyFCB3Mpg&lib=MHUWWaTVISMkhxh13cAvf-0buytW488xe";
 
         window.addEventListener('load', () => { initGame(); });
@@ -48,11 +40,8 @@
             const scoreDiv = document.getElementById('score');
             const btnSend = document.getElementById('btn-send');
             
-            let touchCount = 0;
-            let audioCtx = null;
-            let isTouching = false;
+            let touchCount = 0, audioCtx = null, isTouching = false;
 
-            // --- 1. Setup ฉาก 3D (Three.js) ---
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -62,159 +51,146 @@
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
             scene.add(ambientLight);
 
-            // --- 2. สร้างโครงสร้างวงแหวนเขาวงกตอ้างอิงจากรูป image_fa9ece.png ---
-            // สร้างวงแหวนสิ่งกีดขวางสีขาว/ฟ้าเรืองแสงซ้อนกัน 3 ชั้นตามภาพ
             const mazeGroup = new THREE.Group();
-            const ringRadii = [1.2, 2.2, 3.2]; // รัศมีของวงแหวนแต่ละชั้น
             const ringMaterial = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
 
-            ringRadii.forEach((radius) => {
-                // วาดวงแหวนที่มีความหนาแบนสไตล์ 2.5D
-                const ringGeo = new THREE.RingGeometry(radius - 0.08, radius + 0.08, 64);
-                const ringMesh = new THREE.Mesh(ringGeo, ringMaterial);
-                ringMesh.position.set(0, 0, -5);
-                mazeGroup.add(ringMesh);
-            });
+            // เจาะช่องว่างวงแหวนทั้ง 3 ชั้น
+            const ring1 = new THREE.RingGeometry(1.12, 1.28, 64, 1, 2.0, Math.PI * 2 - 0.8);
+            const ring2 = new THREE.RingGeometry(2.12, 2.28, 64, 1, -0.5, Math.PI * 2 - 0.8);
+            const ring3 = new THREE.RingGeometry(3.12, 3.28, 64, 1, 0.8, Math.PI * 2 - 0.9);
 
-            // สร้างเส้นขวางแบ่งกั้นห้อง (กำแพงเขาวงกตด้านใน)
+            mazeGroup.add(new THREE.Mesh(ring1, ringMaterial));
+            mazeGroup.add(new THREE.Mesh(ring2, ringMaterial));
+            mazeGroup.add(new THREE.Mesh(ring3, ringMaterial));
+
+            // กำแพงกั้นเสริม
             const wallMaterial = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-            const wallGeo = new THREE.BoxGeometry(0.12, 1.0, 0.1);
+            const vWall = new THREE.BoxGeometry(0.12, 0.9, 0.1);
+            const hWall = new THREE.BoxGeometry(0.9, 0.12, 0.1);
             
-            // สุ่มกระจายกำแพงกั้นตามรัศมีวงกลมให้เหมือนในรูปภาพ
-            const wallPositions = [
-                {x: 0, y: 1.7}, {x: 1.5, y: 1.0}, {x: -1.5, y: -1.0},
-                {x: -2.0, y: 1.5}, {x: 2.5, y: -1.5}, {x: 0, y: -2.7}
+            const walls = [
+                { geo: vWall, x: 0, y: -1.7 },
+                { geo: hWall, x: -1.7, y: 0 },
+                { geo: vWall, x: 2.7, y: -1.0 }
             ];
             
-            wallPositions.forEach(pos => {
-                const wall = new THREE.Mesh(wallGeo, wallMaterial);
-                wall.position.set(pos.x, pos.y, -5);
-                mazeGroup.add(wall);
+            walls.forEach(w => {
+                const mesh = new THREE.Mesh(w.geo, wallMaterial);
+                mesh.position.set(w.x, w.y, -5);
+                mazeGroup.add(mesh);
             });
+            mazeGroup.position.set(0, 0, -5);
             scene.add(mazeGroup);
 
-            // --- 3. สร้างมาร์กเกอร์ มนุษย์อวกาศ (START) และ ยานอวกาศ (FINISH) ---
-            createMarker("👨‍🚀 START", 0, 0, "text-emerald-400"); // จุดศูนย์กลางวงกลม
-            createMarker("🚀 FINISH", 3.2, 2.5, "text-amber-400"); // ขวาบนตามภาพ
+            // --- 🛠️ ส่วนที่อัปเดต: ขยายขนาดฟอนต์ ไอคอน และกล่องป้ายชื่อให้ใหญ่สะใจ ---
+            createMarker("👨‍🚀 START", 0, -0.4, "#10b981");      // เริ่มที่จุดกึ่งกลาง (ขยับเยื้องลงนิดหน่อยไม่ให้บังนิ้ว)
+            createMarker("🚀 FINISH", 4.5, 2.3, "#f59e0b");     // เส้นชัยขวาบน (ขยับห่างออกไปอีกนิดเพิ่มความสวยงาม)
 
-            function createMarker(text, x, y, tailwindColor) {
+            function createMarker(text, x, y, hexColorStr) {
                 const canvas = document.createElement('canvas');
-                canvas.width = 256; canvas.height = 64;
+                canvas.width = 512; // ขยายความกว้างของผ้าใบวาดตัวอักษรเป็น 2 เท่า
+                canvas.height = 128; // ขยายความสูง
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = tailwindColor.includes("emerald") ? "#10b981" : "#f59e0b";
-                ctx.font = 'Bold 28px Arial';
-                ctx.fillText(text, 10, 40);
+                
+                // วาดกล่องพื้นหลังจางๆ เพื่อให้ตัวอักษรลอยเด่นขึ้นมา
+                ctx.fillStyle = "rgba(15, 23, 42, 0.6)";
+                ctx.roundRect(10, 10, 492, 108, 20);
+                ctx.fill();
+
+                // ขยายฟอนต์จากเดิม 28px เป็น 54px ใหญ่และคมชัดมากบนจอ
+                ctx.fillStyle = hexColorStr;
+                ctx.font = 'Bold 54px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, 256, 64);
+                
                 const texture = new THREE.CanvasTexture(canvas);
                 const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-                const geom = new THREE.PlaneGeometry(1.2, 0.3);
+                const geom = new THREE.PlaneGeometry(2.4, 0.6); // ขยายขนาดแผ่นป้ายในฉาก 3D เป็น 2 เท่า
                 const mesh = new THREE.Mesh(geom, mat);
-                mesh.position.set(x, y, -4.9);
+                mesh.position.set(x, y, -4.8); // ดึงพิกัดลอยมาข้างหน้าเล็กน้อยเพื่อความชัดเจน
                 scene.add(mesh);
             }
 
-            // สร้างตัวแทน "ห่วงควบคุมมือผู้เล่น" (รอบนี้เปลี่ยนเป็นสัญลักษณ์เป้าเล็งไซไฟสีชมพูนีออน)
-            const pointerGeo = new THREE.TorusGeometry(0.25, 0.04, 8, 32);
+            const pointerGeo = new THREE.TorusGeometry(0.22, 0.04, 8, 32);
             const pointerMat = new THREE.MeshBasicMaterial({ color: 0xf43f5e });
             const pointerMesh = new THREE.Mesh(pointerGeo, pointerMat);
-            pointerMesh.position.set(0, 0, -5); // เริ่มที่ศูนย์กลางวงกลม
+            pointerMesh.position.set(0, 0, -5);
             scene.add(pointerMesh);
 
-            // --- 4. 🔊 เสียงไซเรนเตือนภัยอวกาศ (Space Alarm Siren) ---
             function playSpaceSiren() {
                 try {
                     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     if (audioCtx.state === 'suspended') audioCtx.resume();
-                    
-                    let osc = audioCtx.createOscillator();
-                    let gain = audioCtx.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    
-                    osc.type = 'sine'; // เสียงหวอไซเรนแบบคลื่นมน
-                    // ทำเสียงหวอวูบวาบด่วนฉุกเฉิน (Frequency Modulation)
+                    let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.type = 'sine';
                     osc.frequency.setValueAtTime(580, audioCtx.currentTime);
-                    osc.frequency.linearRampToValueAtTime(880, audioCtx.currentTime + 0.15); // ไล่เสียงจากต่ำไปสูงไวๆ
-                    
+                    osc.frequency.linearRampToValueAtTime(880, audioCtx.currentTime + 0.15);
                     gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.3); // ดังลากยาวขึ้นเป็นเสียงไซเรน 0.3 วินาที
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
                 } catch(e) { console.log(e); }
             }
 
-            // --- 5. ตรวจสอบการชนขอบกำแพงวงกลม ---
             function checkCollision() {
                 let hit = false;
-                const playerX = pointerMesh.position.x;
-                const playerY = pointerMesh.position.y;
-                // คำนวณหาระยะห่างจากจุดศูนย์กลาง (พิกัดดาวดั้งเดิมของมนุษย์อวกาศ)
-                const distanceFromCenter = Math.sqrt(playerX * playerX + playerY * playerY);
+                const pX = pointerMesh.position.x;
+                const pY = pointerMesh.position.y;
+                const dist = Math.sqrt(pX * pX + pY * pY);
+                const angle = Math.atan2(pY, pX);
 
-                // ตรวจสอบว่าพิกัดมือผู้เล่นวิ่งไปทับไลน์รัศมีวงแหวนชั้นใดชั้นหนึ่งหรือไม่
-                ringRadii.forEach(radius => {
-                    if (Math.abs(distanceFromCenter - radius) < 0.12) {
-                        hit = true;
-                    }
+                if (Math.abs(dist - 1.2) < 0.14) {
+                    if (!(angle > 1.2 && angle < 2.0)) hit = true;
+                }
+                else if (Math.abs(dist - 2.2) < 0.14) {
+                    if (!(angle > -0.5 && angle < 0.3)) hit = true;
+                }
+                else if (Math.abs(dist - 3.2) < 0.14) {
+                    if (!(angle > 0.8 && angle < 1.5)) hit = true;
+                }
+
+                walls.forEach(w => {
+                    let wDistX = Math.abs(pX - w.x);
+                    let wDistY = Math.abs(pY - w.y);
+                    if (w.geo === vWall && wDistX < 0.25 && wDistY < 0.5) hit = true;
+                    if (w.geo === hWall && wDistX < 0.5 && wDistY < 0.25) hit = true;
                 });
 
-                // ดักจับจังหวะการชน
                 if (hit) {
                     if (!isTouching) {
-                        isTouching = true;
-                        touchCount++;
+                        isTouching = true; touchCount++;
                         scoreDiv.innerText = `ชนกำแพงดาวเคราะห์: ${touchCount} ครั้ง`;
-                        statusText.innerHTML = `🚨 อาวุธชนสิ่งกีดขวาง!`;
+                        statusText.innerHTML = `🚨 ยานชนสิ่งกีดขวาง!`;
                         statusLed.className = "inline-block w-2 h-2 rounded-full bg-rose-500 animate-ping";
-                        pointerMat.color.setHex(0xff0000); // เปลี่ยนเป้าเล็งเป็นสีแดงแจ้งเตือน
-                        playSpaceSiren(); // ยิงเสียงไซเรนเตือนภัยอวกาศ
+                        pointerMat.color.setHex(0xff0000); playSpaceSiren();
                     }
                 } else {
                     if (isTouching) {
                         isTouching = false;
                         statusText.innerText = "ระบบนำทาง: ปกติ";
                         statusLed.className = "inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-                        pointerMat.color.setHex(0xf43f5e); // กลับเป็นสีชมพูนีออนสว่าง
+                        pointerMat.color.setHex(0xf43f5e);
                     }
                 }
             }
 
-            // --- 6. ระบบส่งข้อมูลเข้า Google Sheets ---
             btnSend.addEventListener('click', () => {
-                btnSend.innerText = "⏳ บันทึกพิกัดสู่อวกาศ...";
-                btnSend.disabled = true;
-
+                btnSend.innerText = "⏳ บันทึกพิกัดสู่อวกาศ..."; btnSend.disabled = true;
                 fetch(GAS_WEB_APP_URL, {
-                    method: "POST",
-                    mode: "no-cors", 
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ score: touchCount, status: "ภารกิจพามนุษย์อวกาศกลับยาน" })
-                })
-                .then(() => {
+                    method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ score: touchCount, status: "พามนุษย์อวกาศทะลุช่องวงกตสำเร็จ" })
+                }).then(() => {
                     btnSend.innerText = "📤 บันทึกคะแนนสำเร็จ!";
-                    setTimeout(() => {
-                        btnSend.innerText = "📤 บันทึกสถิติลง Google Sheets";
-                        btnSend.disabled = false;
-                    }, 2500);
-                })
-                .catch(err => {
-                    alert("การเชื่อมต่อขัดข้อง");
-                    btnSend.disabled = false;
-                });
+                    setTimeout(() => { btnSend.innerText = "📤 บันทึกสถิติลง Google Sheets"; btnSend.disabled = false; }, 2500);
+                }).catch(err => { alert("ขัดข้อง"); btnSend.disabled = false; });
             });
 
-            // --- 7. ประมวลผลนิ้วมือควบคุมพิกัดในอวกาศ ---
             function onResults(results) {
                 if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                    const indexTip = results.multiHandLandmarks[0][8]; // พิกัดปลายนิ้วชี้
-                    
-                    // แปลงพิกัดการเคลื่อนที่ของมือ
-                    let targetX = -(indexTip.x - 0.5) * 9.0; 
-                    let targetY = -(indexTip.y - 0.5) * 6.5;
-                    
-                    pointerMesh.position.x += (targetX - pointerMesh.position.x) * 0.35;
-                    pointerMesh.position.y += (targetY - pointerMesh.position.y) * 0.35;
-
+                    const indexTip = results.multiHandLandmarks[0][8];
+                    pointerMesh.position.x += (-(indexTip.x - 0.5) * 9.0 - pointerMesh.position.x) * 0.35;
+                    pointerMesh.position.y += (-(indexTip.y - 0.5) * 6.5 - pointerMesh.position.y) * 0.35;
                     checkCollision();
                 }
                 renderer.render(scene, camera);
@@ -224,15 +200,11 @@
             hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.55, minTrackingConfidence: 0.55 });
             hands.onResults(onResults);
 
-            const cameraUtils = new Camera(videoElement, {
-                onFrame: async () => { await hands.send({ image: videoElement }); },
-                width: 640, height: 480
-            });
+            const cameraUtils = new Camera(videoElement, { onFrame: async () => { await hands.send({ image: videoElement }); }, width: 640, height: 480 });
             cameraUtils.start();
 
             window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
+                camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
         }
