@@ -55,7 +55,7 @@
             const inputName = document.getElementById('player-name').value.trim();
             if(inputName === "") { alert("❌ ต้องใส่ชื่อ-นามสกุลก่อนนะคร้าบ!"); return; }
             pilotName = inputName;
-            document.getElementById('ui-pilot').innerText = `👨‍✈️ นักบิน: ${pilotName}`;
+            document.getElementById('ui-pilot').innerText = `👨‍✈️ ผู้ขับขี่: ${pilotName}`;
             document.getElementById('login-box').classList.add('opacity-0', 'pointer-events-none');
             initGame();
         });
@@ -201,7 +201,7 @@
                 if (hit) {
                     if (!isTouching) {
                         isTouching = true; touchCount++;
-                        scoreDiv.innerText = `ชนกำแพงดาวเคราะห์: ${touchCount} ครั้ง`;
+                        scoreDiv.innerText = `ชนกำแพง: ${touchCount} ครั้ง`;
                         statusText.innerHTML = `🚨 รถชนสิ่งกีดขวาง!`;
                         statusLed.className = "inline-block w-2 h-2 rounded-full bg-rose-500 animate-ping";
                         bodyMat.color.setHex(0xff3333); playSpaceSiren();
