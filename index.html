@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>🚀 ตะลุยอวกาศกับ สกร.กันตัง - 6-Rings Ultra Edition</title>
+    <title>🚗 เที่ยวกันตัง กับ สกร.กันตัง - 6-Rings Ultra Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
@@ -16,15 +16,15 @@
 
     <div id="login-box" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 blur-bg p-4 transition-all duration-500">
         <div class="bg-slate-900 border border-cyan-500/40 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center text-white">
-            <div class="text-5xl mb-4 animate-bounce">🚀</div>
-            <h2 class="text-2xl font-bold text-cyan-400 mb-2">ตะลุยอวกาศกับ สกร.กันตัง</h2>
-            <p class="text-xs text-slate-400 mb-6">กรุณากรอกชื่อจริงเพื่อบันทึกทำเนียบนักบิน</p>
+            <div class="text-5xl mb-4 animate-bounce">🚗</div>
+            <h2 class="text-2xl font-bold text-cyan-400 mb-2">เที่ยวกันตัง กับ สกร.กันตัง</h2>
+            <p class="text-xs text-slate-400 mb-6">กรุณากรอกชื่อจริงเพื่อบันทึกทำเนียบผู้เดินทาง</p>
             <div class="mb-5">
                 <input type="text" id="player-name" placeholder="ชื่อ - นามสกุลของคุณ" 
                        class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-all text-center font-medium">
             </div>
             <button id="btn-start-game" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-lg shadow-cyan-500/20 cursor-pointer transition-all">
-                👨‍🚀 ยืนยันพิกัดเริ่มบิน
+                👨‍🚀 ยืนยันพิกัดเริ่มขับขี่
             </button>
         </div>
     </div>
@@ -33,14 +33,14 @@
     <div id="canvas3d" class="absolute w-full h-full z-20 pointer-events-none"></div>
 
     <div class="absolute top-4 left-4 z-30 bg-slate-900/90 backdrop-blur-md text-white p-5 rounded-xl border border-cyan-500/30 shadow-2xl max-w-sm">
-        <h1 class="text-xl font-bold tracking-wide mb-1 text-cyan-400">🚀 ตะลุยอวกาศกับ สกร.กันตัง</h1>
-        <p id="ui-pilot" class="text-xs text-emerald-400 mb-2 font-medium">นักบิน: กำลังโหลดข้อมูล...</p>
+        <h1 class="text-xl font-bold tracking-wide mb-1 text-cyan-400">🚗 เที่ยวกันตัง กับ สกร.กันตัง</h1>
+        <p id="ui-pilot" class="text-xs text-emerald-400 mb-2 font-medium">ผู้ขับขี่: กำลังโหลดข้อมูล...</p>
         <div class="space-y-2 text-sm border-t border-slate-700 pt-3">
             <div id="game-status" class="flex items-center gap-2">
                 <span id="status-led" class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="status-text">ระบบนำทาง: ปกติ</span>
             </div>
-            <div id="score" class="text-yellow-400 font-mono text-base">ชนกำแพงดาวเคราะห์: 0 ครั้ง</div>
+            <div id="score" class="text-yellow-400 font-mono text-base">ชนกำแพง: 0 ครั้ง</div>
             <button id="btn-send" class="w-full mt-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium py-2 px-4 rounded-lg text-xs shadow-md cursor-pointer transition-all">📤 ส่งข้อมูลเข้า Google Sheets</button>
         </div>
     </div>
@@ -121,8 +121,8 @@
             scene.add(mazeGroup);
 
             // ป้ายแสดงทิศทางตัวใหญ่สะใจ
-            createMarker("👨‍🚀 START", 0, -0.3, "#10b981");
-            createMarker("🚀 FINISH", 4.4, 2.5, "#f59e0b");
+            createMarker("🚗 START", 0, -0.3, "#10b981");
+            createMarker("🏤 FINISH", 4.4, 2.5, "#f59e0b");
 
             function createMarker(text, x, y, hexColorStr) {
                 const canvas = document.createElement('canvas');
@@ -175,7 +175,7 @@
                 } catch(e) { console.log(e); }
             }
 
-            // --- 🛠️ ปรับปรุงพิกัดการชน 6 ชั้น และตรวจจับการพุ่งชนลูกไฟสิ่งกีดขวางเพิ่มความแม่นยำทางกายภาพ ---
+            // --- 🛠️ ปรับปรุงพิกัดการชน 6 ชั้น และตรวจจับการพุ่งชนสิ่งกีดขวางเพิ่มความแม่นยำทางกายภาพ ---
             function checkCollision() {
                 let hit = false;
                 const pX = spaceshipGroup.position.x;
@@ -202,7 +202,7 @@
                     if (!isTouching) {
                         isTouching = true; touchCount++;
                         scoreDiv.innerText = `ชนกำแพงดาวเคราะห์: ${touchCount} ครั้ง`;
-                        statusText.innerHTML = `🚨 ยานชนสิ่งกีดขวางอวกาศ!`;
+                        statusText.innerHTML = `🚨 รถชนสิ่งกีดขวาง!`;
                         statusLed.className = "inline-block w-2 h-2 rounded-full bg-rose-500 animate-ping";
                         bodyMat.color.setHex(0xff3333); playSpaceSiren();
                     }
